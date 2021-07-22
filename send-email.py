@@ -21,6 +21,7 @@ parser.add_argument('-f', '--from', help="sender's email address", default='abc@
 parser.add_argument('-t', '--to', help="recipient's email address")
 parser.add_argument('-b', '--body', help='body of the email')
 parser.add_argument('-a', '--attachment', help='attachement of the email')
+parser.add_argument('-c', "--server", help="select a email server", default="gmail.com")
 args = vars(parser.parse_args())
 
 # get all values
@@ -29,6 +30,11 @@ fromEmail = args['from']
 toEmail = args['to']
 body = args['body']
 attachment = args['attachment']
+server = args['server']
+
+if server == "gmail.com":
+    serverAddress = "smtp.gmail.com"
+    port = 465
 
 # reading password
 EMAIL = fromEmail
@@ -38,6 +44,8 @@ with open('pass', 'r') as f:
 print("*****************************")
 print('      Information            ')
 print("*****************************")
+print(f'Server Using: {server}')
+print(f'Server Port: {port}')
 print(f'Subject: {subject}')
 print(f'FromEmail: {fromEmail}')
 print(f'ToEmail: {toEmail}')
@@ -84,7 +92,7 @@ if informationCorrect == 'y':
     # if using smtplib.SMTP uncomment the ehlo and startssl line
     # use SSL to not write the ehlo and startssl line
     # also change the port number
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+    with smtplib.SMTP_SSL(serverAddress, port) as smtp:
         # smtp.ehlo()
         # # encrypting the traffic
         # smtp.starttls()
