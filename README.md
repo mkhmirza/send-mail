@@ -19,4 +19,4 @@ Steps to performed
 ## Accessing The Account
 Create a new file **pass.txt** and store your password on the first line.
 
-**Note**: Currently email can be sent using **[gmail.com](gmail.com)** service.
+**Note**: Currently email can be sent using **[gmail.com](https://accounts.google.com/signup/v2/webcreateaccount?hl=en&flowName=GlifWebSignIn&flowEntry=SignUp)** service.
