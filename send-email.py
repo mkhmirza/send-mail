@@ -7,10 +7,11 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
-# type of the image files 
-import imghdr
+from email.mime.application import MIMEApplication
 import argparse
 import sys
+import os
+import sfunc
 
 
 parser = argparse.ArgumentParser(description='Send Email using command line')
@@ -44,12 +45,13 @@ with open('pass', 'r') as f:
 print("*****************************")
 print('      Information            ')
 print("*****************************")
-print(f'Server Using: {server}')
-print(f'Server Port: {port}')
-print(f'Subject: {subject}')
-print(f'FromEmail: {fromEmail}')
-print(f'ToEmail: {toEmail}')
-print(f'Body: {body}')
+print(f'Subject:     {subject}')
+print(f'FromEmail:   {fromEmail}')
+print(f'ToEmail:     {toEmail}')
+print(f'Body:        {body}')
+print('-----------------------------')
+print(f'Server:      {server}')
+print(f'Port:        {port}')
 if attachment:
     print(f'Attachement: {attachment}')
 print("*****************************")
@@ -60,60 +62,77 @@ informationCorrect = input('Is the above information correct?(y/n): ').lower()
 # information is correct
 if informationCorrect == 'y':
 
-    # if using emailmessage: 
-    # msg = EmailMessage()
-    # constructing a email message
-    msg = MIMEMultipart()
-    msg['Subject'] = subject
-    msg['From'] = fromEmail
-    # sending to myself, change to whatever email to send to
-    msg['To'] = toEmail 
+    # if from email is correct
+    if sfunc.matchEmail(fromEmail, server):
 
-    text = MIMEText(body)
-    msg.attach(text)
+        # if using emailmessage:
+        # msg = EmailMessage()
+        # constructing a email message
+        msg = MIMEMultipart()
+        msg['Subject'] = subject
+        msg['From'] = fromEmail
+        # sending to myself, change to whatever email to send to
+        msg['To'] = toEmail
 
-    # open the picture for attachment
-    # use a loop if more than 1 attachment
-    # files = [filename1, filename2]
-    # uncomment the below code and indent change the filename in with open()
-    # for i in files:
-    # if attachment is given
-    if attachment:
-        with open(attachment, "rb") as f:
-            # reading a bytes of piture
-            data = f.read()
-            fileName = f.name
+        text = MIMEText(body)
+        msg.attach(text)
 
-        # add attachment to the message
-        # use msg.add_attachment if using emailmessage
-        image = MIMEImage(data, name=fileName)
-        msg.attach(image)
+        # open the picture for attachment
+        # use a loop if more than 1 attachment
+        # files = [filename1, filename2]
+        # uncomment the below code and indent change the filename in with open()
+        # for i in files:
+        # if attachment is given
 
-    # if using smtplib.SMTP uncomment the ehlo and startssl line
-    # use SSL to not write the ehlo and startssl line
-    # also change the port number
-    with smtplib.SMTP_SSL(serverAddress, port) as smtp:
-        # smtp.ehlo()
-        # # encrypting the traffic
-        # smtp.starttls()
-        # smtp.ehlo()
+        if attachment:
+            # try to split if there are multiple attachements
+            files  = attachment.split(',')
 
-        smtp.login(fromEmail, PASS)
+            for i in range(0, len(files)):
+                with open(files[i], "rb") as f:
+                    # reading a bytes of piture
+                    data = f.read()
+                    # getting filename for the attachment
+                    fileName = f.name
+                    # getting file extension for determining if its a pdf word or anything else                   
+                    # _, fileExt = os.path.splitext(fileName)
+
+                f = MIMEApplication(_data=data)
+                # add header to the attachment
+                f.add_header('Content-Disposition','attachment', filename=fileName)
         
-        # uncomment this if not using email message import 
-        # subject = "Test Email From Python"
-        # body = "This is a test message from python"
-        # msg = f"Subject: {subject}\n\n{body}"
+                # add attachment to the message
+                # use msg.add_attachment if using emailmessage
+                msg.attach(f)
 
-        # # sending email to me from me 
-        # smtp.sendmail(EMAIL, EMAIL, msg)
+        # if using smtplib.SMTP uncomment the ehlo and startssl line
+        # use SSL to not write the ehlo and startssl line
+        # also change the port number
+        with smtplib.SMTP_SSL(serverAddress, port) as smtp:
+            # smtp.ehlo()
+            # # encrypting the traffic
+            # smtp.starttls()
+            # smtp.ehlo()
 
-        # send message using send_message if using emailmessage import
-        smtp.send_message(msg)
+            smtp.login(fromEmail, PASS)
 
-    print("Email Sent")
+            # uncomment this if not using email message import
+            # subject = "Test Email From Python"
+            # body = "This is a test message from python"
+            # msg = f"Subject: {subject}\n\n{body}"
+
+            # # sending email to me from me
+            # smtp.sendmail(EMAIL, EMAIL, msg)
+
+            # send message using send_message if using emailmessage import
+            smtp.send_message(msg)
+
+        print("Email Sent")
+    else:
+        print("Invalid Sender's Email..")
+        sys.exit(0)
 
 # information is not correct
-else: 
+else:
     print('Exiting...')
     sys.exit(0)
